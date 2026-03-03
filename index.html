@@ -412,14 +412,14 @@ html, body {
   <div class="tab-panel active" id="panel-today">
     <div id="today-loading" class="state-banner">
       <div class="spinner"></div>
-      <div class="sb-title">Get ready…</div>
+      <div class="sb-title">Loading chores…</div>
     </div>
     <div id="today-content" style="display:none; flex-direction:column; gap:14px;">
       <!-- Welcome Banner -->
       <div class="welcome-banner">
         <div class="welcome-text">
           <div class="greeting" id="greeting-text">Good morning, Sarah</div>
-          <div class="headline" id="due-count-text"><span id="due-count">0</span> tasks<br>due today</div>
+          <div class="headline" id="due-count-text"><span id="due-count">0</span> chores<br>due today</div>
         </div>
         <svg class="welcome-illo" viewBox="0 0 68 68" fill="none">
           <circle cx="34" cy="28" r="14" fill="#CCFF00"/>
@@ -441,9 +441,9 @@ html, body {
       <div class="timer-block" id="timer-block">
         <div class="timer-progress-bar" id="timer-bar"></div>
         <div>
-          <div class="timer-label">Let's do this</div>
+          <div class="timer-label">Session Timer</div>
           <div class="timer-digits" id="timer-display">15:00</div>
-          <div class="timer-hint" id="timer-hint">Don't let your dreams be dreams</div>
+          <div class="timer-hint" id="timer-hint">Tap to start your chore sprint</div>
         </div>
         <div class="timer-play" id="timer-btn" onclick="toggleTimer()">
           <svg id="timer-icon" width="18" height="22" viewBox="0 0 18 22" fill="none"><path d="M1 1.5L17 11L1 20.5V1.5Z" fill="white"/></svg>
@@ -458,14 +458,14 @@ html, body {
           <div class="chore-card back1" id="card-back1"></div>
           <div class="chore-card front" id="card-front">
             <div class="swipe-action-overlay done-hint" id="done-overlay">✓ Done!</div>
-            <div class="swipe-action-overlay skip-hint" id="skip-overlay"> Skip</div>
+            <div class="swipe-action-overlay skip-hint" id="skip-overlay">→ Skip</div>
             <div class="card-inner" id="card-content"></div>
           </div>
         </div>
         <div class="swipe-bar">
           <div class="swipe-hint">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M6.5 11l-3-3M6.5 11l3-3" stroke="#999990" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Skip
+            Browse
           </div>
           <div class="swipe-dots" id="swipe-dots"></div>
           <div class="swipe-hint done">
@@ -525,7 +525,7 @@ html, body {
 // ══════════════════════════════════════════════════
 const CONFIG = {
   // Paste your Google Apps Script Web App URL here:
-  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyJYKAqz-seoB6kR_BHP2r0veqe5pFti3Ap58rXz06v69kJK5ORZD98vHnWVn3BnPhI/exec',
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxy7BekNVvcs35_wC8G3jbuJ9Qf6IQ0HVDEC8UiTKRUwcqRhPbqLFF7123TFCHlfDV1/exec',
   API_KEY: 'CoolChoreOtter26',
   
   // Set your timezone offset from UTC in hours (e.g. AEST = 10, BST = 1)
@@ -603,20 +603,16 @@ function switchTab(tab) {
 // DATA LOADING
 // ══════════════════════════════════════════════════
 async function loadData() {
-  if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyJYKAqz-seoB6kR_BHP2r0veqe5pFti3Ap58rXz06v69kJK5ORZD98vHnWVn3BnPhI/exec') {
+  if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
     showConfigError();
     return;
   }
 
   try {
-   const data = await new Promise((resolve, reject) => {
-  const callbackName = '_cb' + Date.now();
-  const script = document.createElement('script');
-  window[callbackName] = (d) => { delete window[callbackName]; script.remove(); resolve(d); };
-  script.onerror = () => reject(new Error('Script load failed'));
-  script.src = CONFIG.SCRIPT_URL + '?action=getData&key=' + CONFIG.API_KEY + '&callback=' + callbackName;
-  document.head.appendChild(script);
-});
+    const res = await fetch(CONFIG.SCRIPT_URL + '?action=getData&key=' + CONFIG.API_KEY);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
 
     allChores = data.chores || [];
     completionLog = data.completions || [];
@@ -952,7 +948,7 @@ function skipCurrentCard() {
 }
 
 async function logCompletion(choreName) {
-  if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyJYKAqz-seoB6kR_BHP2r0veqe5pFti3Ap58rXz06v69kJK5ORZD98vHnWVn3BnPhI/exec') return;
+  if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
   const today = new Date().toISOString().split('T')[0];
   await fetch(CONFIG.SCRIPT_URL, {
     method: 'POST',
